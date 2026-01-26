@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deformation Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .slider-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            z-index: 10;
+            background-color: rgb(255, 255, 255);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid black;
+        }
+
+        /* Label for sliders */
+        .slider-container label {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+
+        /* Slider element */
+        .slider-container input[type="range"] {
+            width: 400px;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="slider-container">
+        <label id="label1" for="slider1">r = 5</label>
+        <input type="range" id="slider1" min="1" max="30" value="5">
+        <label id="label2" for="slider2">a = 2</label>
+        <input type="range" id="slider2" min="1" max="30" value="2">
+    </div>
+
+    <script>
+        const GRID_SIZE = 50;
+
+        let slider1, slider2;
+        let r, b, isTurningPoint;
+
+        // assumes inputs are non-negative
+        function gcd(x, y) {
+            if (x < y) {
+                [x, y] = [y, x];
+            }
+            while (y != 0) {
+                [x, y] = [y, x % y];
+            }
+            return x;
+        }
+
+        // like % but non-negative
+        function mod(x, y) {
+            const ans = x % y;
+            return ans < 0 ? ans + y : ans;
+        }
+
+        // inefficient for large y, but good enough
+        function invmod(x, y) {
+            for (let z = 0; z < y; z++) {
+                if (mod(z*x - 1, y) == 0) return z;
+            }
+        }
+
+        function setup() {
+            noLoop();
+
+            const canvas = createCanvas(windowWidth, windowHeight);
+            canvas.mouseClicked(handleClick);
+
+            slider1 = select('#slider1');
+            slider2 = select('#slider2');
+
+            slider1.input(updateParams);
+            slider2.input(updateParams);
+
+            updateParams();
+        }
+
+        function mouseMoved() {
+            redraw();
+        }
+
+        function handleClick() {
+            const i = round(mouseX / GRID_SIZE);
+            const j = round(mouseY / GRID_SIZE);
+            const index = mod(-b*i - j, r);
+            if (index == 0) return;
+            isTurningPoint[index] = !isTurningPoint[index];
+            redraw();
+        }
+
+        function updateParams() {
+            const r0 = slider1.value();
+            const a0 = slider2.value();
+            select('#label1').html(`r = ${r0}`);
+            select('#label2').html(`a = ${a0}`);
+            g = gcd(r0, a0);
+            r = slider1.value() / g;
+            const a = (slider2.value() / g) % r;
+            b = invmod(a, r);
+            isTurningPoint = Array(r).fill(false);
+            isTurningPoint[0] = true;
+            redraw();
+        }
+
+        function draw() {
+            background(255);
+            scale(GRID_SIZE);
+            strokeWeight(.05)
+            drawMouseIndicator();
+            repeat(r, b, () => {
+                drawLagrangians();
+                drawOrangeDot();
+            });
+        }
+
+        function drawMouseIndicator() {
+            const i = round(mouseX / GRID_SIZE);
+            const j = round(mouseY / GRID_SIZE);
+            const index = mod(-b*i - j, r);
+            if (index == 0) return;
+            noStroke();
+            fill(200);
+            circle(i, j, .25);
+        }
+
+        function repeat(r, b, f) {
+            const maxI = width / GRID_SIZE;
+            const maxJ = height / GRID_SIZE;
+            for (let i = 0; i < maxI + 1; i++) {
+                // -bi - j = 0 mod r
+                for (let j = mod(-b*i, r); j < maxJ + r; j += r) {
+                    push();
+                    translate(i, j);
+                    f();
+                    pop();
+                }
+            }
+        }
+
+        // vertical means halfway above, horizontal means halfway to the left
+        function makeSegment(index, isVertical) {
+            return { index: index, isVertical: isVertical };
+        }
+
+        function segmentsEqual(seg1, seg2) {
+            return seg1.index == seg2.index && seg1.isVertical == seg2.isVertical;
+        }
+
+        function nextSegment(segment) {
+            const newIsVertical = (segment.isVertical != isTurningPoint[segment.index]);
+            const delta = newIsVertical ? -1 : -b;
+            newIndex = mod(segment.index + delta, r);
+            return makeSegment(newIndex, newIsVertical);
+        }
+
+        function findLagrangians() {
+            const lagrangians = [];
+            for (let i = 0; i < r; i++) {
+                const firstSegment = makeSegment(i, true);
+                if (lagrangians.some(l => l.some(seg => segmentsEqual(seg, firstSegment))))
+                    continue;
+                const segments = [];
+                let curSegment = firstSegment;
+                while (true) {
+                    segments.push(curSegment);
+                    curSegment = nextSegment(curSegment);
+                    if (segmentsEqual(curSegment, firstSegment))
+                        break;
+                }
+                lagrangians.push(segments);
+            }
+            return lagrangians;
+        }
+
+        function drawSegment(x, y, isVert1, isVert2) {
+            noFill();
+            if (isVert1 && isVert2)
+                line(x, y - .5, x, y + .5);
+            else if (!isVert1 && !isVert2)
+                line(x - .5, y, x + .5, y);
+            else if (isVert1 && !isVert2)
+                arc(x + .5, y - .5, 1, 1, HALF_PI, PI);
+            else if (!isVert1 && isVert2)
+                arc(x - .5, y + .5, 1, 1, -HALF_PI, 0);
+        }
+
+        function drawLagrangian(segments) {
+            for (let i = 0; i < segments.length; i++) {
+                const seg1 = segments[i];
+                const seg2 = i == segments.length - 1 ? segments[0] : segments[i+1];
+                drawSegment(0, - seg1.index, seg1.isVertical, seg2.isVertical);
+            }
+        }
+
+        function drawLagrangians() {
+            const lagrangians = findLagrangians();
+            const COLORS = ['red', 'blue', 'green', 'gold', 'black'];
+            for (let i = 0; i < lagrangians.length; i++) {
+                const segments = lagrangians[i];
+                const color = COLORS[i % COLORS.length];
+                stroke(color);
+                drawLagrangian(segments);
+            }
+        }
+
+        function drawOrangeDot() {
+            fill('orange');
+            noStroke();
+            circle(0, 0, .2);
+        }
+    </script>
+</body>
+</html>
