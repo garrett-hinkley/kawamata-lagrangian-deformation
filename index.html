@@ -101,9 +101,6 @@
         function setup() {
             noLoop();
 
-            const canvas = createCanvas(windowWidth, windowHeight);
-            canvas.mouseClicked(handleClick);
-
             slider1 = select('#slider1');
             slider2 = select('#slider2');
 
@@ -118,6 +115,9 @@
 
             slider1.input(handleSliderUpdate);
             slider2.input(handleSliderUpdate);
+
+            const canvas = createCanvas(windowWidth, windowHeight);
+            canvas.mouseClicked(handleClick);
         }
 
         function setSlider1(value) {
@@ -255,7 +255,7 @@
 
         function drawLagrangians(r, b) {
             const lagrangians = findLagrangians(r, b);
-            const COLORS = ['red', 'blue', 'green', 'gold', 'black', 'magenta', 'cyan', 'green'];
+            const COLORS = ['red', 'blue', 'green', 'gold', 'black', 'magenta', 'cyan', 'lightgreen'];
             for (let i = 0; i < lagrangians.length; i++) {
                 const segments = lagrangians[i];
                 const color = COLORS[i % COLORS.length];
