@@ -53,16 +53,16 @@
 <body>
     <div class="slider-container">
         <label id="label1" for="slider1">r = 5</label>
-        <input type="range" id="slider1" min="1" max="30" value="5">
+        <input type="range" autocomplete="off" id="slider1" min="1" max="30" value="5">
         <label id="label2" for="slider2">a = 2</label>
-        <input type="range" id="slider2" min="1" max="30" value="2">
+        <input type="range" autocomplete="off" id="slider2" min="1" max="30" value="2">
     </div>
 
     <script>
         const GRID_SIZE = 50;
 
         let slider1, slider2;
-        let r, b, isTurningPoint;
+        let isTurningPoint = [true, false, false, false, false];
 
         // assumes inputs are non-negative
         function gcd(x, y) {
@@ -88,6 +88,16 @@
             }
         }
 
+        function calcRB() {
+            const r0 = slider1.value();
+            const a0 = slider2.value();
+            g = gcd(r0, a0);
+            const r = r0 / g;
+            const a = (a0 / g) % r;
+            const b = invmod(a, r);
+            return [r, b];
+        }
+
         function setup() {
             noLoop();
 
@@ -97,10 +107,44 @@
             slider1 = select('#slider1');
             slider2 = select('#slider2');
 
-            slider1.input(updateParams);
-            slider2.input(updateParams);
+            // setSlider overwrites is-turning-point in local storage, so we must read is-turning-point first
+            const sliderStored1 = getItem('slider1');
+            const sliderStored2 = getItem('slider2');
+            const isTurningPointStored = getItem('is-turning-point');
 
-            updateParams();
+            if (sliderStored1) setSlider1(sliderStored1);
+            if (sliderStored2) setSlider2(sliderStored2);
+            if (isTurningPointStored) setIsTurningPoint(isTurningPointStored);
+
+            slider1.input(handleSliderUpdate);
+            slider2.input(handleSliderUpdate);
+        }
+
+        function setSlider1(value) {
+            slider1.value(value);
+            handleSliderUpdate();
+        }
+
+        function setSlider2(value) {
+            slider2.value(value);
+            handleSliderUpdate();
+        }
+
+        function handleSliderUpdate() {
+            const r0 = slider1.value();
+            const a0 = slider2.value();
+            select('#label1').html(`r = ${r0}`);
+            select('#label2').html(`a = ${a0}`);
+            storeItem('slider1', slider1.value());
+            storeItem('slider2', slider2.value());
+            const [r, b] = calcRB();
+            setIsTurningPoint(Array(r).fill(false).with(0, true));
+            redraw();
+        }
+
+        function setIsTurningPoint(arr) {
+            isTurningPoint = arr;
+            storeItem('is-turning-point', arr);
         }
 
         function mouseMoved() {
@@ -110,38 +154,27 @@
         function handleClick() {
             const i = round(mouseX / GRID_SIZE);
             const j = round(mouseY / GRID_SIZE);
+            const [r, b] = calcRB();
             const index = mod(-b*i - j, r);
             if (index == 0) return;
-            isTurningPoint[index] = !isTurningPoint[index];
-            redraw();
-        }
-
-        function updateParams() {
-            const r0 = slider1.value();
-            const a0 = slider2.value();
-            select('#label1').html(`r = ${r0}`);
-            select('#label2').html(`a = ${a0}`);
-            g = gcd(r0, a0);
-            r = slider1.value() / g;
-            const a = (slider2.value() / g) % r;
-            b = invmod(a, r);
-            isTurningPoint = Array(r).fill(false);
-            isTurningPoint[0] = true;
+            setIsTurningPoint(isTurningPoint.with(index, !isTurningPoint[index]));
             redraw();
         }
 
         function draw() {
+            const [r, b] = calcRB();
+
             background(255);
             scale(GRID_SIZE);
             strokeWeight(.05)
-            drawMouseIndicator();
+            drawMouseIndicator(r, b);
             repeat(r, b, () => {
-                drawLagrangians();
+                drawLagrangians(r, b);
                 drawOrangeDot();
             });
         }
 
-        function drawMouseIndicator() {
+        function drawMouseIndicator(r, b) {
             const i = round(mouseX / GRID_SIZE);
             const j = round(mouseY / GRID_SIZE);
             const index = mod(-b*i - j, r);
@@ -174,14 +207,14 @@
             return seg1.index == seg2.index && seg1.isVertical == seg2.isVertical;
         }
 
-        function nextSegment(segment) {
+        function nextSegment(r, b, segment) {
             const newIsVertical = (segment.isVertical != isTurningPoint[segment.index]);
             const delta = newIsVertical ? -1 : -b;
             newIndex = mod(segment.index + delta, r);
             return makeSegment(newIndex, newIsVertical);
         }
 
-        function findLagrangians() {
+        function findLagrangians(r, b) {
             const lagrangians = [];
             for (let i = 0; i < r; i++) {
                 const firstSegment = makeSegment(i, true);
@@ -191,7 +224,7 @@
                 let curSegment = firstSegment;
                 while (true) {
                     segments.push(curSegment);
-                    curSegment = nextSegment(curSegment);
+                    curSegment = nextSegment(r, b, curSegment);
                     if (segmentsEqual(curSegment, firstSegment))
                         break;
                 }
@@ -220,8 +253,8 @@
             }
         }
 
-        function drawLagrangians() {
-            const lagrangians = findLagrangians();
+        function drawLagrangians(r, b) {
+            const lagrangians = findLagrangians(r, b);
             const COLORS = ['red', 'blue', 'green', 'gold', 'black'];
             for (let i = 0; i < lagrangians.length; i++) {
                 const segments = lagrangians[i];
