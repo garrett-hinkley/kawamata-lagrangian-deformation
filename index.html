@@ -169,8 +169,8 @@
             strokeWeight(.05)
             drawMouseIndicator(r, b);
             repeat(r, b, () => {
-                drawLagrangians(r, b);
                 drawOrangeDot();
+                drawLagrangians(r, b);
             });
         }
 
@@ -196,6 +196,12 @@
                     pop();
                 }
             }
+        }
+
+        function drawOrangeDot() {
+            fill('orange');
+            noStroke();
+            circle(0, 0, .2);
         }
 
         // vertical means halfway above, horizontal means halfway to the left
@@ -262,12 +268,6 @@
                 stroke(color);
                 drawLagrangian(segments);
             }
-        }
-
-        function drawOrangeDot() {
-            fill('orange');
-            noStroke();
-            circle(0, 0, .2);
         }
     </script>
 </body>
