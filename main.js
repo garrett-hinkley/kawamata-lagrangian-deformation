@@ -94,7 +94,7 @@ const sketch = (p) => {
             p.stroke(color);
             for (const seg1 of segments) {
                 const seg2 = seg1.nextSegment();
-                const y = -seg1.index;
+                const y = -seg1.point.index;
                 p.noFill();
                 if (seg1.isVertical && seg2.isVertical)
                     p.line(0, y - .5, 0, y + .5);
