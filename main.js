@@ -1,4 +1,4 @@
-import { Surgery } from "./surgery.js";
+import { findLagrangians, Surgery } from "./surgery.js";
 import { mod } from "./utils.js";
 
 const GRID_SIZE = 50;
@@ -106,7 +106,7 @@ const sketch = (p) => {
     }
 
     function drawLagrangians() {
-        const lagrangians = surgery.findLagrangians();
+        const lagrangians = findLagrangians(surgery);
         const COLORS = ['red', 'blue', 'green', 'gold', 'black', 'magenta', 'cyan', 'lightgreen'];
         for (let i = 0; i < lagrangians.length; i++) {
             const segments = lagrangians[i];
@@ -125,60 +125,7 @@ const sketch = (p) => {
             drawOrangeDot();
             drawLagrangians();
         });
-
-        // TODO recalculate rank less often
-        // console.log(calculateRank(r, b, isTurningPoint));
     }
 };
 
 const myp5 = new p5(sketch);
-
-// // move this to new file?
-// function bigon(start, end, sign) {
-//     return { start: start, end: end, sign: sign };
-// }
-
-// // make surgery struct / class with r, a, b, isTurningPoint? (and rank?)
-// function getTurningPointAbove(r, b, isTurningPoint, point) {
-//     point = mod(point + 1, r);
-//     while (!isTurningPoint[point]) {
-//         point = mod(point + 1, r);
-//     }
-//     return point;
-// }
-
-// function getTurningPointRight(r, b, isTurningPoint, point) {
-//     point = mod(point - b, r);
-//     while (!isTurningPoint[point]) {
-//         point = mod(point - b, r);
-//     }
-//     return point;
-// }
-
-// function findBigonsTurningPoint(r, b, isTurningPoint, point) {
-//     return [
-//         bigon(point, getTurningPointAbove(r, b, isTurningPoint, point), 1),
-//         bigon(point, getTurningPointRight(r, b, isTurningPoint, point), -1),
-//     ];
-// }
-
-// function findBigonsIntersectionPoint(r, b, isTurningPoint, point) {
-//     return [];
-// }
-
-// function calculateRank(r, b, isTurningPoint) {
-//     const matrix = [];
-//     for (let i = 0; i < r; i++) {
-//         matrix.push(Array(r).fill(0));
-//     }
-//     for (let point = 0; point < r; point++) {
-//         const bigons = isTurningPoint[point] ? findBigonsTurningPoint(r, b, isTurningPoint, point)
-//                                                 : findBigonsIntersectionPoint(r, b, point);
-//         for (const bigon of bigons) {
-//             // use cols instead of rows?
-//             matrix[bigon.start][bigon.end] += sign;
-//         }
-//     }
-//     // TODO calculate nullity
-//     return matrix;
-// }

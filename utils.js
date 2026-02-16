@@ -22,3 +22,8 @@ export function invmod(x, y) {
     }
 }
 
+export function arraysEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    return arr1.every((elem, index) => elem === arr2[index]);
+}
+
