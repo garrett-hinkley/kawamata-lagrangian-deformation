@@ -85,26 +85,6 @@ const sketch = (p) => {
         p.circle(0, 0, .2);
     }
 
-    function drawSegment(x, y, isVert1, isVert2) {
-        p.noFill();
-        if (isVert1 && isVert2)
-            p.line(x, y - .5, x, y + .5);
-        else if (!isVert1 && !isVert2)
-            p.line(x - .5, y, x + .5, y);
-        else if (isVert1 && !isVert2)
-            p.arc(x + .5, y - .5, 1, 1, p.HALF_PI, p.PI);
-        else if (!isVert1 && isVert2)
-            p.arc(x - .5, y + .5, 1, 1, -p.HALF_PI, 0);
-    }
-
-    function drawLagrangian(segments) {
-        for (let i = 0; i < segments.length; i++) {
-            const seg1 = segments[i];
-            const seg2 = i == segments.length - 1 ? segments[0] : segments[i+1];
-            drawSegment(0, - seg1.index, seg1.isVertical, seg2.isVertical);
-        }
-    }
-
     function drawLagrangians() {
         const lagrangians = findLagrangians(surgery);
         const COLORS = ['red', 'blue', 'green', 'gold', 'black', 'magenta', 'cyan', 'lightgreen'];
@@ -112,7 +92,19 @@ const sketch = (p) => {
             const segments = lagrangians[i];
             const color = COLORS[i % COLORS.length];
             p.stroke(color);
-            drawLagrangian(segments);
+            for (const seg1 of segments) {
+                const seg2 = seg1.nextSegment();
+                const y = -seg1.index;
+                p.noFill();
+                if (seg1.isVertical && seg2.isVertical)
+                    p.line(0, y - .5, 0, y + .5);
+                else if (!seg1.isVertical && !seg2.isVertical)
+                    p.line(-.5, y, 0 + .5, y);
+                else if (seg1.isVertical && !seg2.isVertical)
+                    p.arc(.5, y - .5, 1, 1, p.HALF_PI, p.PI);
+                else if (!seg1.isVertical && seg2.isVertical)
+                    p.arc(-.5, y + .5, 1, 1, -p.HALF_PI, 0);
+            }
         }
     }
 
