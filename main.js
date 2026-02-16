@@ -1,36 +1,50 @@
-import { findLagrangians } from "./findLagrangians.js";
-import { gcd, mod, invmod } from "./utils.js";
+import { Surgery } from "./surgery.js";
+import { mod } from "./utils.js";
+
+const GRID_SIZE = 50;
+
+let surgery;
 
 const sketch = (p) => {
-    const GRID_SIZE = 50;
+    function setSurgery(newSurgery) {
+        surgery = newSurgery;
+        p.storeItem('surgery', newSurgery);
+    }
 
-    let slider1, slider2;
-    let isTurningPoint = [true, false, false, false, false];
+    function handleSliderUpdate() {
+        const r0 = p.select('#slider1').value();
+        const a0 = p.select('#slider2').value();
+        p.select('#label1').html(`r = ${r0}`);
+        p.select('#label2').html(`a = ${a0}`);
+        setSurgery(new Surgery(r0, a0));
+        p.redraw();
+    }
 
-    function calcRB() {
-        const r0 = slider1.value();
-        const a0 = slider2.value();
-        const g = gcd(r0, a0);
-        const r = r0 / g;
-        const a = (a0 / g) % r;
-        const b = invmod(a, r);
-        return [r, b];
+    function handleClick() {
+        const i = p.round(p.mouseX / GRID_SIZE);
+        const j = p.round(p.mouseY / GRID_SIZE);
+        const index = mod(-surgery.b * i - j, surgery.r);
+        setSurgery(surgery.toggleTurningPoint(index));
+        p.redraw();
     }
 
     p.setup = () => {
         p.noLoop();
 
-        slider1 = p.select('#slider1');
-        slider2 = p.select('#slider2');
+        const slider1 = p.select('#slider1');
+        const slider2 = p.select('#slider2');
+        surgery = new Surgery(slider1.value(), slider2.value());
 
-        // setSlider overwrites is-turning-point in local storage, so we must read is-turning-point first
-        const sliderStored1 = p.getItem('slider1');
-        const sliderStored2 = p.getItem('slider2');
-        const isTurningPointStored = p.getItem('is-turning-point');
-
-        if (sliderStored1) setSlider1(sliderStored1);
-        if (sliderStored2) setSlider2(sliderStored2);
-        if (isTurningPointStored) setIsTurningPoint(isTurningPointStored);
+        const stored = p.getItem('surgery');
+        if (stored) {
+            const r0 = stored.r0;
+            const a0 = stored.a0;
+            slider1.value(r0);
+            slider2.value(a0);
+            p.select('#label1').html(`r = ${r0}`);
+            p.select('#label2').html(`a = ${a0}`);
+            surgery = new Surgery(stored.r0, stored.a0, stored.isTurningPoint);
+        }
 
         slider1.input(handleSliderUpdate);
         slider2.input(handleSliderUpdate);
@@ -39,62 +53,7 @@ const sketch = (p) => {
         canvas.mouseClicked(handleClick);
     }
 
-    function setSlider1(value) {
-        slider1.value(value);
-        handleSliderUpdate();
-    }
-
-    function setSlider2(value) {
-        slider2.value(value);
-        handleSliderUpdate();
-    }
-
-    function handleSliderUpdate() {
-        const r0 = slider1.value();
-        const a0 = slider2.value();
-        p.select('#label1').html(`r = ${r0}`);
-        p.select('#label2').html(`a = ${a0}`);
-        p.storeItem('slider1', slider1.value());
-        p.storeItem('slider2', slider2.value());
-        const [r, b] = calcRB();
-        setIsTurningPoint(Array(r).fill(false).with(0, true));
-        p.redraw();
-    }
-
-    function setIsTurningPoint(arr) {
-        isTurningPoint = arr;
-        p.storeItem('is-turning-point', arr);
-    }
-
-    p.mouseMoved = () => {
-        p.redraw();
-    }
-
-    function handleClick() {
-        const i = p.round(p.mouseX / GRID_SIZE);
-        const j = p.round(p.mouseY / GRID_SIZE);
-        const [r, b] = calcRB();
-        const index = mod(-b*i - j, r);
-        if (index == 0) return;
-        setIsTurningPoint(isTurningPoint.with(index, !isTurningPoint[index]));
-        p.redraw();
-    }
-
-    p.draw = () => {
-        const [r, b] = calcRB();
-
-        p.background(255);
-        p.scale(GRID_SIZE);
-        p.strokeWeight(.05)
-        drawMouseIndicator(r, b);
-        repeat(r, b, () => {
-            drawOrangeDot();
-            drawLagrangians(r, b);
-        });
-
-        // TODO recalculate rank less often
-        // console.log(calculateRank(r, b, isTurningPoint));
-    }
+    p.mouseMoved = p.redraw;
 
     function drawMouseIndicator(r, b) {
         const i = p.round(p.mouseX / GRID_SIZE);
@@ -146,8 +105,8 @@ const sketch = (p) => {
         }
     }
 
-    function drawLagrangians(r, b) {
-        const lagrangians = findLagrangians(r, b, isTurningPoint);
+    function drawLagrangians() {
+        const lagrangians = surgery.findLagrangians();
         const COLORS = ['red', 'blue', 'green', 'gold', 'black', 'magenta', 'cyan', 'lightgreen'];
         for (let i = 0; i < lagrangians.length; i++) {
             const segments = lagrangians[i];
@@ -157,10 +116,22 @@ const sketch = (p) => {
         }
     }
 
+    p.draw = () => {
+        p.background(255);
+        p.scale(GRID_SIZE);
+        p.strokeWeight(.05)
+        drawMouseIndicator(surgery.r, surgery.b);
+        repeat(surgery.r, surgery.b, () => {
+            drawOrangeDot();
+            drawLagrangians();
+        });
+
+        // TODO recalculate rank less often
+        // console.log(calculateRank(r, b, isTurningPoint));
+    }
 };
 
-// Start the sketch
-new p5(sketch);
+const myp5 = new p5(sketch);
 
 // // move this to new file?
 // function bigon(start, end, sign) {
