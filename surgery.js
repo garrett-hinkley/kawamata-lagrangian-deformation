@@ -29,7 +29,7 @@ export class Surgery {
 class Point {
     constructor(surgery, index) {
         this.surgery = surgery;
-        this.index = index;
+        this.index = mod(index, surgery.r);
     }
 
     equals(other) {
@@ -41,7 +41,7 @@ class Point {
     }
 
     move(delta) {
-        return new Point(this.surgery, mod(this.index + delta, this.surgery.r));
+        return new Point(this.surgery, this.index + delta);
     }
 
     moveUp() {
