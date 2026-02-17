@@ -96,12 +96,16 @@ const sketch = (p) => {
                 const seg2 = seg1.nextSegment();
                 const y = -seg1.point.index;
                 p.noFill();
+                // vertical segment
                 if (seg1.isVertical && seg2.isVertical)
                     p.line(0, y - .5, 0, y + .5);
+                // horizontal segment
                 else if (!seg1.isVertical && !seg2.isVertical)
                     p.line(-.5, y, 0 + .5, y);
+                // left turn
                 else if (seg1.isVertical && !seg2.isVertical)
                     p.arc(.5, y - .5, 1, 1, p.HALF_PI, p.PI);
+                // right turn
                 else if (!seg1.isVertical && seg2.isVertical)
                     p.arc(-.5, y + .5, 1, 1, -p.HALF_PI, 0);
             }
