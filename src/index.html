@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deformation Calculator</title>
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.min.js"></script> -->
     <style>
         body {
             margin: 0;
@@ -28,6 +28,7 @@
             padding: 10px;
             border-radius: 8px;
             border: 1px solid black;
+            font-size: 30px;
         }
 
         /* Label for sliders */
@@ -39,6 +40,11 @@
         /* Slider element */
         .slider-container input[type="range"] {
             width: 400px;
+            margin-bottom: 5px;
+        }
+
+        #rank.bad {
+            color: red;
         }
 
         canvas {
@@ -52,10 +58,11 @@
 </head>
 <body>
     <div class="slider-container">
-        <label id="label1" for="slider1">r = 5</label>
+        <label id="label1" for="slider1">r = ?</label>
         <input type="range" autocomplete="off" id="slider1" min="1" max="40" value="5">
-        <label id="label2" for="slider2">a = 2</label>
+        <label id="label2" for="slider2">a = ?</label>
         <input type="range" autocomplete="off" id="slider2" min="1" max="40" value="2">
+        <div id="rank"> Rank = ? </div>
     </div>
 
     <script type="module" src="main.js"></script>

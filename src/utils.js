@@ -27,3 +27,13 @@ export function arraysEqual(arr1, arr2) {
     return arr1.every((elem, index) => elem === arr2[index]);
 }
 
+// lexicographic comparator function for use with Array.sort()
+// assumes arr1.length === arr2.length
+export function compareArrays(arr1, arr2) {
+    for (let i = 0; i < arr1.length; i++) {
+        if (i >= arr2.length) return -1;
+        if (arr1[i] < arr2[i]) return -1;
+        if (arr1[i] > arr2[i]) return 1;
+    }
+    return 0;
+}

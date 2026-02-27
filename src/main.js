@@ -1,14 +1,24 @@
-import { findLagrangians, Surgery } from "./surgery.js";
 import { mod } from "./utils.js";
+import { findLagrangians, Surgery } from "./surgery.js";
+import { calculateRank } from "./bigons.js";
+import p5 from "https://cdn.jsdelivr.net/npm/p5@1.11.11/+esm";
 
 const GRID_SIZE = 50;
 
 let surgery;
 
 const sketch = (p) => {
+    function displayRank() {
+        const rank = calculateRank(surgery);
+        p.select('#rank').html(`Rank = ${rank}`);
+        if (rank !== surgery.r) p.select('#rank').addClass('bad');
+        else p.select('#rank').removeClass('bad');
+    }
+
     function setSurgery(newSurgery) {
         surgery = newSurgery;
         p.storeItem('surgery', newSurgery);
+        displayRank();
     }
 
     function handleSliderUpdate() {
@@ -43,7 +53,8 @@ const sketch = (p) => {
             slider2.value(a0);
             p.select('#label1').html(`r = ${r0}`);
             p.select('#label2').html(`a = ${a0}`);
-            surgery = new Surgery(stored.r0, stored.a0, stored.isTurningPoint);
+            surgery = new Surgery(r0, a0, stored.isTurningPoint);
+            displayRank();
         }
 
         slider1.input(handleSliderUpdate);
@@ -101,7 +112,7 @@ const sketch = (p) => {
                     p.line(0, y - .5, 0, y + .5);
                 // horizontal segment
                 else if (!seg1.isVertical && !seg2.isVertical)
-                    p.line(-.5, y, 0 + .5, y);
+                    p.line(-.5, y, .5, y);
                 // left turn
                 else if (seg1.isVertical && !seg2.isVertical)
                     p.arc(.5, y - .5, 1, 1, p.HALF_PI, p.PI);
