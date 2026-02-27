@@ -1,5 +1,5 @@
-import { Bigon, findAllBigons } from "../src/bigons.js";
-import { Surgery } from "../src/surgery.js";
+import { Bigon, findAllBigons } from "../docs/bigons.js";
+import { Surgery } from "../docs/surgery.js";
 import { expect } from '@jest/globals';
 
 // test when r = 1? (or just ban it)
