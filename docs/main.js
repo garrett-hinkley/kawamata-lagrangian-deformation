@@ -1,6 +1,6 @@
 import { mod } from "./utils.js";
 import { findLagrangians, Surgery } from "./surgery.js";
-import { calculateRank } from "./bigons.js";
+import { calculateRank } from "./rank.js";
 import p5 from "https://cdn.jsdelivr.net/npm/p5@1.11.11/+esm";
 
 const GRID_SIZE = 50;
