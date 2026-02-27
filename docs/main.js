@@ -44,6 +44,7 @@ const sketch = (p) => {
         const slider1 = p.select('#slider1');
         const slider2 = p.select('#slider2');
         surgery = new Surgery(slider1.value(), slider2.value());
+        displayRank();
 
         const stored = p.getItem('surgery');
         if (stored) {
