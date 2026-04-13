@@ -72,13 +72,13 @@ function findOtherBigonCorner(point) {
     let path2 = new Path([(new Segment(point, true))]);
     path1 = path1.extend();
     while (!path1.segs[0].equals(path1.segs.at(-1))) {
-        const diff1 = path1.deltaX() - path2.deltaX();
-        const diff2 = path1.deltaY() - path2.deltaY();
-        if (diff1 < 0 || diff2 < 0 || path1.endPoint().isTurningPoint()) {
+        const diffX = path1.deltaX() - path2.deltaX();
+        const diffY = path1.deltaY() - path2.deltaY();
+        if (diffX < 0 || diffY < 0 || path1.endPoint().isTurningPoint()) {
             path1 = path1.extend();
             continue;
         }
-        if (diff1 > 0 || diff2 > 0 || path2.endPoint().isTurningPoint()) {
+        if (diffX > 0 || diffY > 0 || path2.endPoint().isTurningPoint()) {
             path2 = path2.extend();
             continue;
         }
