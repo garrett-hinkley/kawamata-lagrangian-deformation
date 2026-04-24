@@ -20,6 +20,7 @@ const sketch = (p) => {
         surgery = newSurgery;
         p.storeItem('surgery', newSurgery);
         displayRank();
+        p.redraw();
     }
 
     function handleSliderUpdate() {
@@ -28,7 +29,6 @@ const sketch = (p) => {
         p.select('#label1').html(`r = ${r0}`);
         p.select('#label2').html(`a = ${a0}`);
         setSurgery(new Surgery(r0, a0));
-        p.redraw();
     }
 
     function handleClick() {
@@ -36,7 +36,6 @@ const sketch = (p) => {
         const j = p.round(p.mouseY / GRID_SIZE);
         const index = mod(-surgery.b * i - j, surgery.r);
         setSurgery(surgery.toggleTurningPoint(index));
-        p.redraw();
     }
 
     p.setup = () => {
