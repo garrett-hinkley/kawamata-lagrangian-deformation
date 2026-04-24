@@ -12,8 +12,8 @@ class DSU {
     }
 
     union(i, j) {
-        let rootI = this.find(i);
-        let rootJ = this.find(j);
+        const rootI = this.find(i);
+        const rootJ = this.find(j);
         if (rootI !== rootJ) {
             this.parents[rootI] = rootJ;
             this.numComponents--;
