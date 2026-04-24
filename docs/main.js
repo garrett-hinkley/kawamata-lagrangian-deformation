@@ -65,6 +65,11 @@ const sketch = (p) => {
         canvas.mouseClicked(handleClick);
     }
 
+    p.keyPressed = () => {
+        if (p.key !== ' ') return;
+        setSurgery(surgery.reset());
+    }
+
     p.mouseMoved = p.redraw;
 
     function drawMouseIndicator(r, b) {
