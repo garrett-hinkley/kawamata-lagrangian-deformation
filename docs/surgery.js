@@ -24,6 +24,10 @@ export class Surgery {
         if (index === 0) return this;
         else return new Surgery(this.r, this.a, this.isTurningPoint.with(index, !this.isTurningPoint[index]))
     }
+
+    reset() {
+        return new Surgery(this.r0, this.a0);
+    }
 }
 
 export class Point {
