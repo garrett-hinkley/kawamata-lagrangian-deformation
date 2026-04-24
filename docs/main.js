@@ -10,9 +10,10 @@ let surgery;
 const sketch = (p) => {
     function displayRank() {
         const rank = calculateRank(surgery);
-        p.select('#rank').html(`Rank = ${rank}`);
-        if (rank !== surgery.r) p.select('#rank').addClass('bad');
-        else p.select('#rank').removeClass('bad');
+        const elem = p.select('#rank');
+        elem.html(`Rank = ${rank}`);
+        if (rank !== surgery.r) elem.addClass('bad');
+        else elem.removeClass('bad');
     }
 
     function setSurgery(newSurgery) {
